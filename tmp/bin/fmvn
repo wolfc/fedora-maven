@@ -1,0 +1,24 @@
+#!/bin/sh
+# this script is a hack to set m2.conf and some other options
+if [ -f /usr/share/java-utils/java-functions ] ; then
+  . /usr/share/java-utils/java-functions
+  set_jvm
+  set_javacmd
+fi
+
+#export M2_HOME=/usr/share/maven
+export M2_HOME=/opt/apache/apache-maven-3.0.3
+FMVN_HOME=`dirname $0`/..
+FMVN_REPO=`dirname $0`/../repository
+export M2_CONF=`dirname $0`/m2.conf
+echo $JAVA_HOME
+export JAVA_HOME
+#$M2_HOME/bin/mvn "$@"
+exec /usr/bin/java \
+  -classpath "${M2_HOME}"/boot/*classworlds*.jar \
+  "-Dclassworlds.conf=${M2_CONF}" \
+  "-Dfmvn.home=${FMVN_HOME}" \
+  "-Dfmvn.repo=${FMVN_REPO}" \
+  "-Dmaven.home=${M2_HOME}" \
+  org.codehaus.plexus.classworlds.launcher.Launcher \
+  "-Dmaven.repo.local=.m2" $*

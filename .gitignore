@@ -1,0 +1,6 @@
+target
+# intellij
+/.idea
+*.iml
+# mnv-rpmbuild
+/.m2

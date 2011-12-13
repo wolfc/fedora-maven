@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    vim:ts=4:sw=4:expandtab
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+<!--
+    <parent>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-parent</artifactId>
+        <version>15</version>
+    </parent>
+-->
+
+    <groupId>org.fedoraproject.maven</groupId>
+    <artifactId>maven</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <plexusVersion>1.5.5</plexusVersion>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-metadata</artifactId>
+                    <version>${plexusVersion}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate-metadata</goal>
+                                <goal>generate-test-metadata</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>maven-fedora-provider</module>
+        <module>maven-fedora-repository</module>
+    </modules>
+</project>
