@@ -1,0 +1,7 @@
+TODO: list build requirements
+
+To bootstrap:
+$ mvn-rpmbuild -Dmaven.local.depmap.file=/usr/share/maven-fragments/maven package
+
+To run (for the moment):
+$ tmp/bin/fmvn -Dmaven.local.depmap.file=/usr/share/maven-fragments/maven package

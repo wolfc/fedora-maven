@@ -23,7 +23,7 @@ public class FedoraPluginVersionResolver implements PluginVersionResolver {
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
-    @Requirement
+    @Requirement(hint = "default")
     private DefaultPluginVersionResolver delegate;
 
     @Override
