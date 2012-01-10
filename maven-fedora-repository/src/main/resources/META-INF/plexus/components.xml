@@ -106,6 +106,41 @@
             </requirements>
         </component>
         <component>
+            <role>org.sonatype.aether.impl.ArtifactDescriptorReader</role>
+            <role-hint></role-hint>
+            <implementation>org.apache.maven.repository.internal.DefaultArtifactDescriptorReader</implementation>
+            <description></description>
+            <isolated-realm>false</isolated-realm>
+            <requirements>
+                <requirement>
+                    <role>org.sonatype.aether.spi.log.Logger</role>
+                    <role-hint></role-hint>
+                    <field-name>logger</field-name>
+                </requirement>
+                <requirement>
+                    <role>org.sonatype.aether.impl.RemoteRepositoryManager</role>
+                    <role-hint></role-hint>
+                    <field-name>remoteRepositoryManager</field-name>
+                </requirement>
+                <requirement>
+                    <role>org.sonatype.aether.impl.VersionResolver</role>
+                    <role-hint></role-hint>
+                    <field-name>versionResolver</field-name>
+                </requirement>
+                <!-- loop back to Fedora -->
+                <requirement>
+                    <role>org.sonatype.aether.RepositorySystem</role>
+                    <role-hint></role-hint>
+                    <field-name>artifactResolver</field-name>
+                </requirement>
+                <requirement>
+                    <role>org.apache.maven.model.building.ModelBuilder</role>
+                    <role-hint></role-hint>
+                    <field-name>modelBuilder</field-name>
+                </requirement>
+            </requirements>
+        </component>
+        <component>
             <role>org.sonatype.aether.impl.internal.DefaultRepositorySystem</role>
             <role-hint>default</role-hint>
             <implementation>org.sonatype.aether.impl.internal.DefaultRepositorySystem</implementation>
