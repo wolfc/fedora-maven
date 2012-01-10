@@ -9,7 +9,8 @@ fi
 export M2_HOME=/usr/share/maven
 #export M2_HOME=/opt/apache/apache-maven-3.0.3
 FMVN_HOME=`dirname $0`/..
-FMVN_REPO=`dirname $0`/../repository
+# Must be a valid URL
+FMVN_REPO=file:/usr/share/maven/repository
 export M2_CONF=`dirname $0`/m2.conf
 echo $JAVA_HOME
 export JAVA_HOME
