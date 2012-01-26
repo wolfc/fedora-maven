@@ -6,11 +6,17 @@ if [ -f /usr/share/java-utils/java-functions ] ; then
   set_javacmd
 fi
 
-export M2_HOME=/usr/share/maven
-#export M2_HOME=/opt/apache/apache-maven-3.0.3
+if [ -z "$M2_HOME" ]
+then
+    export M2_HOME=/usr/share/maven
+    #export M2_HOME=/opt/apache/apache-maven-3.0.3
+fi
 FMVN_HOME=`dirname $0`/..
-# Must be a valid URL
-FMVN_REPO=file:/usr/share/maven/repository
+if [ -z "$FMVN_REPO" ]
+then
+    # Must be a valid URL
+    FMVN_REPO=file:/usr/share/maven/repository
+fi
 export M2_CONF=`dirname $0`/m2.conf
 echo $JAVA_HOME
 export JAVA_HOME
