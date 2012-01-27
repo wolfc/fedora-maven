@@ -6,6 +6,7 @@ import static org.fedoraproject.maven.repository.internal.RepositorySystemSessio
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -74,13 +75,15 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
     @Requirement
     private DependencyCollector dependencyCollector;
 
-    private RemoteRepository fedoraRepository;
-    private MirrorSelector mirrorSelector;
+    private final boolean useJPP;
+    private final RemoteRepository fedoraRepository;
+    private final MirrorSelector mirrorSelector;
 
 //    private WorkspaceReader jppRepository = new JavadirWorkspaceReader();
     private final JPPLocalRepositoryManager jppRepositoryManager = new JPPLocalRepositoryManager();
 
     public FedoraRepositorySystem() {
+        this.useJPP = Boolean.getBoolean("fmvn.useJPP");
         // we only want to use this repository
         this.fedoraRepository = new RemoteRepository("fedora", "default", System.getProperty("fmvn.repo", "file:/usr/share/maven/repository"));
         this.mirrorSelector = new MirrorSelector() {
@@ -104,6 +107,35 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             return;
         final String msg = args == null ? String.format(format) : String.format(format, args);
         logger.debug(msg);
+    }
+
+    private boolean hasArtifact(final RepositorySystemSession session, final VersionRangeRequest request, final Version version) {
+        if (version == null)
+            return false;
+
+        /* this will blow, because it'll try to find a jar for a pom artifact
+        try {
+            final Artifact artifact = request.getArtifact();
+            final Artifact versionedArtifact = new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), version.toString(), artifact.getProperties(), artifact.getFile() );
+            final ArtifactRequest alternateRequest = new ArtifactRequest(versionedArtifact, singletonList(fedoraRepository), request.getRequestContext())
+                    .setTrace(request.getTrace());
+            final ArtifactResult result = artifactResolver.resolveArtifact(session, alternateRequest);
+            if (result.getExceptions().isEmpty())
+                return true;
+        } catch (ArtifactResolutionException e) {
+            throw new RuntimeException(e);
+        }
+        */
+        try {
+            final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+                    .setTrace(request.getTrace());
+            final ArtifactDescriptorResult result = delegate.readArtifactDescriptor(session, alternateRequest);
+            if (result.getExceptions().isEmpty())
+                return true;
+        } catch (ArtifactDescriptorException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     public void setDefaultRepositorySystem(DefaultRepositorySystem delegate) {
@@ -135,6 +167,16 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
                 if (highestVersion != null && result.getRepository(highestVersion) != null)
                     return result;
             }
+
+            // the Fedora local repo might be running without metadata
+            // TODO: how to check that?
+            if (hasArtifact(session, request, highestVersion)) {
+                result.setRepository(highestVersion, fedoraRepository);
+                return result;
+            }
+
+            if (!useJPP)
+                return result;
 
             // try JPP local repo
             // JPP will always return something regardless of the version, but without
@@ -194,7 +236,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             }
         }
         // try JPP local repo
-        {
+        if (useJPP) {
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
@@ -231,7 +273,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         DependencyCollectionException originalException = null;
         // FIXME: work in progress, we need to aggregate all
         // try JPP local repo
-        {
+        if (useJPP) {
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
@@ -315,9 +357,8 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             }
         }
         // try Fedora local repo with LATEST
-        if (artifact.getVersion().equals(LATEST_VERSION))
-            throw new IllegalStateException("NYI: LATEST should not appear during resolveArtifact, should it?");
-        /*
+        if (!artifact.getVersion().equals(LATEST_VERSION))
+//            throw new IllegalStateException("NYI: LATEST should not appear during resolveArtifact, should it?");
         {
             try {
                 final Artifact alternateArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), LATEST_VERSION, artifact.getProperties(), artifact.getFile());
@@ -334,9 +375,8 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
                     originalException = e;
             }
         }
-        */
         // try JPP local repo
-        {
+        if (useJPP) {
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
@@ -404,6 +444,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
     }
 
     private RepositorySystemSession openJPP(final RepositorySystemSession current) {
+        assert useJPP : "useJPP is not set";
         final RepositorySystemSession alternateSession = new DefaultRepositorySystemSession(current)
                 .setOffline(true)
 //                    .setWorkspaceReader(jppRepository);
