@@ -58,9 +58,7 @@ public class FedoraModelBuilder implements ModelBuilder {
         }
         Model resultModel = result.getEffectiveModel();
 
-        DefaultModelProblemCollector problems = new DefaultModelProblemCollector( result.getProblems() );
-        problems.setSource( resultModel );
-        problems.setRootModel( resultModel );
+        final FedoraModelProblemCollector problems = new FedoraModelProblemCollector(result);
         defaultModelValidator.validateEffectiveModel(resultModel,  request, problems);
         return result;
     }
