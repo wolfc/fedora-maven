@@ -191,7 +191,7 @@ public class MavenJPackageDepmap {
                 processDepmapFile("/usr/share/maven-fragments/" + fragFilename);
         }
 
-        String customFileName = System.getProperty("maven.local.depmap.file",
+        String customFileName = System.getProperty("fre.depmap.file",
                 null);
         if (customFileName != null) {
             debug("Processing file: " + customFileName);

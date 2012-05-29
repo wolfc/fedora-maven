@@ -105,9 +105,9 @@ public class FossRepositorySystem implements ArtifactDescriptorReader, ArtifactR
     private final JPPLocalRepositoryManager jppRepositoryManager = new JPPLocalRepositoryManager();
 
     public FossRepositorySystem() {
-        this.useJPP = Boolean.getBoolean("fmvn.useJPP");
+        this.useJPP = Boolean.getBoolean("fre.useJPP");
         // we only want to use this repository
-        this.fossRepository = new RemoteRepository("foss", "default", System.getProperty("fmvn.repo", "file:/usr/share/maven/repository"));
+        this.fossRepository = new RemoteRepository("foss", "default", System.getProperty("fre.repo", "file:/usr/share/maven/repository"));
         this.mirrorSelector = new MirrorSelector() {
             @Override
             public RemoteRepository getMirror(RemoteRepository repository) {

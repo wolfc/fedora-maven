@@ -4,4 +4,4 @@ To bootstrap:
 $ mvn-rpmbuild -Dmaven.local.depmap.file=/usr/share/maven-fragments/maven package
 
 To run (for the moment):
-$ tmp/bin/fmvn -Dfmvn.useJPP=true -Dmaven.local.depmap.file=/usr/share/maven-fragments/maven package
+$ tmp/bin/fmvn -Dfre.useJPP=true -Dfre.depmap.file=/usr/share/maven-fragments/maven package

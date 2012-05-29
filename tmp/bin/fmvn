@@ -11,11 +11,11 @@ then
     export M2_HOME=/usr/share/maven
     #export M2_HOME=/opt/apache/apache-maven-3.0.3
 fi
-FMVN_HOME=`dirname $0`/..
-if [ -z "$FMVN_REPO" ]
+FRE_HOME=`dirname $0`/..
+if [ -z "$FRE_REPO" ]
 then
     # Must be a valid URL
-    FMVN_REPO=file:/usr/share/maven/repository
+    FRE_REPO=file:/usr/share/maven/repository
 fi
 export M2_CONF=`dirname $0`/m2.conf
 echo $JAVA_HOME
@@ -25,8 +25,8 @@ exec /usr/bin/java \
   -ea \
   -classpath "${M2_HOME}"/boot/*classworlds*.jar \
   "-Dclassworlds.conf=${M2_CONF}" \
-  "-Dfmvn.home=${FMVN_HOME}" \
-  "-Dfmvn.repo=${FMVN_REPO}" \
+  "-Dfre.home=${FRE_HOME}" \
+  "-Dfre.repo=${FRE_REPO}" \
   "-Dmaven.home=${M2_HOME}" \
   org.codehaus.plexus.classworlds.launcher.Launcher \
   "-Dmaven.repo.local=.m2" $*
