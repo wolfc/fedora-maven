@@ -53,7 +53,12 @@ public class FossModelProblemCollector implements ModelProblemCollector {
     }
 
     @Override
-    public void add(final ModelProblem.Severity severity, final String message, final InputLocation location, final Exception cause) {
+    public void add(
+            final ModelProblem.Severity severity,
+            final String message,
+            final InputLocation location,
+            final Exception cause) {
+
         int line = -1;
         int column = -1;
         String source = null;
@@ -79,7 +84,9 @@ public class FossModelProblemCollector implements ModelProblemCollector {
             column = e.getColumnNumber();
         }
 
-        ModelProblem problem = new DefaultModelProblem(message, severity, source, line, column, modelId, cause);
+        ModelProblem problem =
+                new DefaultModelProblem(message, severity, source, line, column,
+                        modelId, cause);
 
         add(problem);
     }
@@ -93,9 +100,8 @@ public class FossModelProblemCollector implements ModelProblemCollector {
     }
 
     private static String toId(Model model) {
-        if (model == null) {
+        if (model == null)
             return "";
-        }
 
         String groupId = model.getGroupId();
         if (groupId == null && model.getParent() != null) {
@@ -120,14 +126,24 @@ public class FossModelProblemCollector implements ModelProblemCollector {
      * @param version    The version, may be {@code null}.
      * @return The user-friendly artifact id, never {@code null}.
      */
-    private static String toId(String groupId, String artifactId, String version) {
+    private static String toId(
+            String groupId,
+            String artifactId,
+            String version) {
+
         StringBuilder buffer = new StringBuilder(96);
 
-        buffer.append((groupId != null && groupId.length() > 0) ? groupId : "[unknown-group-id]");
+        buffer.append((groupId != null && groupId.length() > 0)
+                ? groupId
+                : "[unknown-group-id]");
         buffer.append(':');
-        buffer.append((artifactId != null && artifactId.length() > 0) ? artifactId : "[unknown-artifact-id]");
+        buffer.append((artifactId != null && artifactId.length() > 0)
+                ? artifactId
+                : "[unknown-artifact-id]");
         buffer.append(':');
-        buffer.append((version != null && version.length() > 0) ? version : "[unknown-version]");
+        buffer.append((version != null && version.length() > 0)
+                ? version
+                : "[unknown-version]");
 
         return buffer.toString();
     }

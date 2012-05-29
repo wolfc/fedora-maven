@@ -72,9 +72,9 @@ public class JavadirWorkspaceReader implements WorkspaceReader {
             path = getPOMPath(groupId, artifactId);
             ret = new File(path.toString());
         } else {
-            String repos[] = { "/usr/share/maven/repository/",
+            String repos[] = {"/usr/share/maven/repository/",
                     "/usr/share/maven/repository-java-jni/",
-                    "/usr/share/maven/repository-jni/" };
+                    "/usr/share/maven/repository-jni/"};
             String relativeArtifactPath = groupId + "/" + artifactId + "."
                     + artifact.getExtension();
             for (String repo : repos) {
@@ -110,8 +110,8 @@ public class JavadirWorkspaceReader implements WorkspaceReader {
         String fName = groupId.replace(PATH_SEPARATOR, GROUP_SEPARATOR) + "-"
                 + artifactId + ".pom";
         File f;
-        String[] pomRepos = { "/usr/share/maven2/poms/",
-                "/usr/share/maven/poms/", "/usr/share/maven-poms/" };
+        String[] pomRepos = {"/usr/share/maven2/poms/",
+                "/usr/share/maven/poms/", "/usr/share/maven-poms/"};
 
         for (String pomRepo : pomRepos) {
             f = new File(pomRepo + fName);

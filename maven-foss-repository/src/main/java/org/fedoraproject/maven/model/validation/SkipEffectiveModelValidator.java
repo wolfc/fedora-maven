@@ -31,8 +31,8 @@ import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
  * This class is purely in place to skip effective model validation.
- * JPP contains invalid poms, so we want to skip the effective model validation, fix-up
- * the model and then validate.
+ * JPP contains invalid poms, so we want to skip the effective model validation,
+ * fix-up the model and then validate.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -42,12 +42,20 @@ public class SkipEffectiveModelValidator implements ModelValidator {
     private ModelValidator defaultModelValidator;
 
     @Override
-    public void validateRawModel(Model model, ModelBuildingRequest request, ModelProblemCollector problems) {
+    public void validateRawModel(
+            Model model,
+            ModelBuildingRequest request,
+            ModelProblemCollector problems) {
+
         defaultModelValidator.validateRawModel(model, request, problems);
     }
 
     @Override
-    public void validateEffectiveModel(Model model, ModelBuildingRequest request, ModelProblemCollector problems) {
+    public void validateEffectiveModel(
+            Model model,
+            ModelBuildingRequest request,
+            ModelProblemCollector problems) {
+
         // noop
     }
 }

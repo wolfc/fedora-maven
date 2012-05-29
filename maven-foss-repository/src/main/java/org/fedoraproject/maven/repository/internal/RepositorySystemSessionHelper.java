@@ -29,12 +29,14 @@ import org.sonatype.aether.RepositorySystemSession;
  */
 class RepositorySystemSessionHelper {
     protected static void invalidSession(String name) {
-        throw new IllegalArgumentException("Invalid repository system session: " + name + " is not set.");
+        throw new IllegalArgumentException(
+                "Invalid repository system session: " + name + " is not set.");
     }
 
     protected static void validateSession(RepositorySystemSession session) {
         if (session == null) {
-            throw new IllegalArgumentException("Invalid repository system session: the session may not be null.");
+            throw new IllegalArgumentException(
+                    "Invalid repository system session: the session may not be null.");
         }
         if (session.getLocalRepositoryManager() == null) {
             invalidSession("LocalRepositoryManager");

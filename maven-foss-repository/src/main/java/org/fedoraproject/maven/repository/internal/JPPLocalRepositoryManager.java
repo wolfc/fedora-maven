@@ -58,26 +58,45 @@ class JPPLocalRepositoryManager implements LocalRepositoryManager {
 
     @Override
     public String getPathForLocalArtifact(Artifact artifact) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.getPathForLocalArtifact");
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.getPathForLocalArtifact");
     }
 
     @Override
-    public String getPathForRemoteArtifact(Artifact artifact, RemoteRepository repository, String context) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.getPathForRemoteArtifact");
+    public String getPathForRemoteArtifact(
+            Artifact artifact,
+            RemoteRepository repository,
+            String context) {
+
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.getPathForRemoteArtifact");
     }
 
     @Override
     public String getPathForLocalMetadata(Metadata metadata) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.getPathForLocalMetadata");
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.getPathForLocalMetadata");
     }
 
     @Override
-    public String getPathForRemoteMetadata(Metadata metadata, RemoteRepository repository, String context) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.getPathForRemoteMetadata");
+    public String getPathForRemoteMetadata(
+            Metadata metadata,
+            RemoteRepository repository,
+            String context) {
+
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.getPathForRemoteMetadata");
     }
 
     @Override
-    public LocalArtifactResult find(RepositorySystemSession session, LocalArtifactRequest request) {
+    public LocalArtifactResult find(
+            RepositorySystemSession session,
+            LocalArtifactRequest request) {
+
         final LocalArtifactResult result = new LocalArtifactResult(request);
         final File file = jppRepository.findArtifact(request.getArtifact());
         if (file != null) {
@@ -88,13 +107,22 @@ class JPPLocalRepositoryManager implements LocalRepositoryManager {
     }
 
     @Override
-    public void add(RepositorySystemSession session, LocalArtifactRegistration request) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.add");
+    public void add(
+            RepositorySystemSession session,
+            LocalArtifactRegistration request) {
+
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.add");
     }
 
     @Override
-    public LocalMetadataResult find(RepositorySystemSession session, LocalMetadataRequest request) {
-//        System.err.println("JPPLocalRepositoryManager: find(" + session + ", " + request + ")");
+    public LocalMetadataResult find(
+            RepositorySystemSession session,
+            LocalMetadataRequest request) {
+
+//        System.err.println("JPPLocalRepositoryManager: find(" + session + ", " +
+//                request + ")");
         final LocalMetadataResult result = new LocalMetadataResult(request);
         // TODO: for the moment we don't support metadata
         return result;
@@ -102,7 +130,12 @@ class JPPLocalRepositoryManager implements LocalRepositoryManager {
     }
 
     @Override
-    public void add(RepositorySystemSession session, LocalMetadataRegistration request) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.JPPLocalRepositoryManager.add");
+    public void add(
+            RepositorySystemSession session,
+            LocalMetadataRegistration request) {
+
+        throw new RuntimeException(
+                "NYI: org.fedoraproject.maven.repository.internal." +
+                "JPPLocalRepositoryManager.add");
     }
 }

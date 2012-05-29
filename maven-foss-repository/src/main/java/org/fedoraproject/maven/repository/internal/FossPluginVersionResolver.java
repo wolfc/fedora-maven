@@ -49,11 +49,19 @@ public class FossPluginVersionResolver implements PluginVersionResolver {
     private DefaultPluginVersionResolver delegate;
 
     @Override
-    public PluginVersionResult resolve(PluginVersionRequest request) throws PluginVersionResolutionException {
-        //final PluginVersionRequest alternate = new DefaultPluginVersionRequest(plugin(request), request.getRepositorySession(), remotes()).setPom(request.getPom());
-        logger.warn("No version specified for plugin " + request.getGroupId() + ":" + request.getArtifactId() + ", falling back to RELEASE");
+    public PluginVersionResult resolve(PluginVersionRequest request)
+            throws PluginVersionResolutionException {
+
+//        final PluginVersionRequest alternate =
+//                new DefaultPluginVersionRequest(plugin(request),
+//                        request.getRepositorySession(),
+//                        remotes()).setPom(request.getPom());
+
+        logger.warn("No version specified for plugin " + request.getGroupId() +
+                ":" + request.getArtifactId() + ", falling back to RELEASE");
         //final PluginVersionResult result = delegate.resolve(request);
-        //logger.warn("Would have been " + result.getVersion() + " from " + result.getRepository());
+//        logger.warn("Would have been " + result.getVersion() + " from " +
+//                result.getRepository());
         return new PluginVersionResult() {
             @Override
             public String getVersion() {
@@ -67,9 +75,12 @@ public class FossPluginVersionResolver implements PluginVersionResolver {
         };
     }
 
-    public FossPluginVersionResolver setDefaultPluginVersionResolver(DefaultPluginVersionResolver delegate) {
+    public FossPluginVersionResolver setDefaultPluginVersionResolver(
+            DefaultPluginVersionResolver delegate) {
+
         if (delegate == null) {
-            throw new IllegalArgumentException("default plugin version resolver has not been specified");
+            throw new IllegalArgumentException(
+                    "default plugin version resolver has not been specified");
         }
         this.delegate = delegate;
         return this;

@@ -127,7 +127,7 @@
                     <role-hint></role-hint>
                     <field-name>versionResolver</field-name>
                 </requirement>
-                <!-- loop back to Fedora -->
+                <!-- loop back to FOSS Repository -->
                 <requirement>
                     <role>org.sonatype.aether.RepositorySystem</role>
                     <role-hint></role-hint>
@@ -162,7 +162,7 @@
                     <role-hint></role-hint>
                     <field-name>versionRangeResolver</field-name>
                 </requirement>
-                <!-- loop back to Fedora -->
+                <!-- loop back to FOSS Repository -->
                 <requirement>
                     <role>org.sonatype.aether.RepositorySystem</role>
                     <role-hint></role-hint>
@@ -178,7 +178,7 @@
                     <role-hint></role-hint>
                     <field-name>artifactDescriptorReader</field-name>
                 </requirement>
-                <!-- loop back to Fedora -->
+                <!-- loop back to FOSS Repository -->
                 <requirement>
                     <role>org.sonatype.aether.RepositorySystem</role>
                     <role-hint></role-hint>
@@ -222,13 +222,13 @@
                     <role-hint></role-hint>
                     <field-name>remoteRepositoryManager</field-name>
                 </requirement>
-                <!-- loop back to Fedora -->
+                <!-- loop back to FOSS Repository -->
                 <requirement>
                     <role>org.sonatype.aether.RepositorySystem</role>
                     <role-hint></role-hint>
                     <field-name>descriptorReader</field-name>
                 </requirement>
-                <!-- loop back to Fedora -->
+                <!-- loop back to FOSS Repository -->
                 <requirement>
                     <role>org.sonatype.aether.RepositorySystem</role>
                     <role-hint></role-hint>

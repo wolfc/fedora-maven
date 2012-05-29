@@ -50,9 +50,10 @@ public class FossModelBuilder implements ModelBuilder {
     private ModelValidator defaultModelValidator;
 
     @Override
-    public ModelBuildingResult build(ModelBuildingRequest request) throws ModelBuildingException {
-        // The JPP repository contains broken poms which do not properly specify dependency versions.
-        // This is a hack to counter such problems.
+    public ModelBuildingResult build(ModelBuildingRequest request)
+            throws ModelBuildingException {
+        // The JPP repository contains broken poms which do not properly specify
+        // dependency versions. This is a hack to counter such problems.
         final boolean onePhase;
         if (request.isTwoPhaseBuilding()) {
             // just perform phase 1
@@ -63,29 +64,45 @@ public class FossModelBuilder implements ModelBuilder {
     }
 
     @Override
-    public ModelBuildingResult build(ModelBuildingRequest request, ModelBuildingResult result) throws ModelBuildingException {
+    public ModelBuildingResult build(
+            ModelBuildingRequest request,
+            ModelBuildingResult result)
+            throws ModelBuildingException {
+
         result = delegate.build(request, result);
         return fixUp(request, result);
     }
 
-    protected ModelBuildingResult fixUp(ModelBuildingRequest request, ModelBuildingResult result) {
+    protected ModelBuildingResult fixUp(
+            ModelBuildingRequest request,
+            ModelBuildingResult result) {
+
         if (!isFromJPP(request, result))
             return result;
+
         for (Dependency dependency : result.getEffectiveModel().getDependencies()) {
             if (dependency.getVersion() == null) {
-                // just to get us past a missing dependency validation error set it to "" and cross your fingers
-                logger.warn("No version specified for " + dependency + " in " + request.getModelSource().getLocation() + ", defaulting to none");
+                // just to get us past a missing dependency validation error set
+                // it to "" and cross your fingers
+                logger.warn("No version specified for " + dependency + " in "
+                        + request.getModelSource().getLocation() +
+                        ", defaulting to none");
                 dependency.setVersion("");
             }
         }
         Model resultModel = result.getEffectiveModel();
 
-        final FossModelProblemCollector problems = new FossModelProblemCollector(result);
-        defaultModelValidator.validateEffectiveModel(resultModel,  request, problems);
+        final FossModelProblemCollector problems =
+                new FossModelProblemCollector(result);
+        defaultModelValidator.validateEffectiveModel(resultModel, request, problems);
+
         return result;
     }
 
-    private boolean isFromJPP(ModelBuildingRequest request, ModelBuildingResult result) {
+    private boolean isFromJPP(
+            ModelBuildingRequest request,
+            ModelBuildingResult result) {
+
         // TODO: how to implement this?
         return true;
     }

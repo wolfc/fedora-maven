@@ -50,9 +50,8 @@ public class MavenJPackageDepmap {
     }
 
     /**
-     * 
      * @author Stanislav Ochotnicky <sochotnicky@redhat.com>
-     * 
+     *         <p/>
      *         This class is used to wrap around fragments that are mapping
      *         artifacts to jar files in our _javadir. These used to be
      *         processed in a macro after every package installation. Fragments
@@ -111,13 +110,16 @@ public class MavenJPackageDepmap {
 
     public Hashtable<String, String> getMappedInfo(
             Hashtable<String, String> mavenDep) {
+
         return getMappedInfo((String) mavenDep.get("group"),
                 (String) mavenDep.get("artifact"),
                 (String) mavenDep.get("version"));
     }
 
-    public Hashtable<String, String> getMappedInfo(String groupId,
-            String artifactId, String version) {
+    public Hashtable<String, String> getMappedInfo(
+            String groupId,
+            String artifactId,
+            String version) {
 
         Hashtable<String, String> jppDep;
         String idToCheck, jppCombination;
@@ -150,8 +152,11 @@ public class MavenJPackageDepmap {
     /**
      * Returns whether or not the given dependency should be dropped.
      */
-    public boolean shouldEliminate(String groupId, String artifactId,
+    public boolean shouldEliminate(
+            String groupId,
+            String artifactId,
             String version) {
+
         String idToCheck;
 
         if (PROCESS_VERSIONS) {
@@ -166,7 +171,6 @@ public class MavenJPackageDepmap {
     }
 
     private static void buildJppArtifactMap() {
-
         if (!PROCESS_VERSIONS) {
             debug("Processing file: /usr/share/java-utils/xml/maven2-versionless-depmap.xml");
             processDepmapFile("/etc/maven/maven2-versionless-depmap.xml");
@@ -201,7 +205,6 @@ public class MavenJPackageDepmap {
     }
 
     private static void processDepmapFile(String fileName) {
-
         Document mapDocument;
         debug("Loading depmap file: " + fileName);
         try {
