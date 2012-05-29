@@ -1,10 +1,10 @@
 <component-set>
     <components>
-        <!-- make sure FedoraRepositorySystem is listed first -->
+        <!-- make sure FossRepositorySystem is listed first -->
         <component>
             <role>org.sonatype.aether.RepositorySystem</role>
             <role-hint></role-hint>
-            <implementation>org.fedoraproject.maven.repository.internal.FedoraRepositorySystem</implementation>
+            <implementation>org.fedoraproject.maven.repository.internal.FossRepositorySystem</implementation>
             <!--
             <description></description>
             <isolated-realm>false</isolated-realm>

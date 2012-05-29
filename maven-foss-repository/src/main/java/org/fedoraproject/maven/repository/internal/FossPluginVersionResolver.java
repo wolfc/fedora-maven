@@ -41,7 +41,7 @@ import org.sonatype.aether.spi.log.NullLogger;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Component(role = PluginVersionResolver.class)
-public class FedoraPluginVersionResolver implements PluginVersionResolver {
+public class FossPluginVersionResolver implements PluginVersionResolver {
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
@@ -67,7 +67,7 @@ public class FedoraPluginVersionResolver implements PluginVersionResolver {
         };
     }
 
-    public FedoraPluginVersionResolver setDefaultPluginVersionResolver(DefaultPluginVersionResolver delegate) {
+    public FossPluginVersionResolver setDefaultPluginVersionResolver(DefaultPluginVersionResolver delegate) {
         if (delegate == null) {
             throw new IllegalArgumentException("default plugin version resolver has not been specified");
         }
@@ -75,7 +75,7 @@ public class FedoraPluginVersionResolver implements PluginVersionResolver {
         return this;
     }
 
-    public FedoraPluginVersionResolver setLogger(Logger logger) {
+    public FossPluginVersionResolver setLogger(Logger logger) {
         this.logger = (logger != null) ? logger : NullLogger.INSTANCE;
         return this;
     }

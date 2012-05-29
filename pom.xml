@@ -64,9 +64,6 @@
     </build>
 
     <modules>
-        <!--
-        <module>maven-fedora-provider</module>
-        -->
-        <module>maven-fedora-repository</module>
+        <module>maven-foss-repository</module>
     </modules>
 </project>

@@ -83,8 +83,8 @@ import org.sonatype.aether.version.Version;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Component(role = RepositorySystem.class, hint = "fedora")
-public class FedoraRepositorySystem implements ArtifactDescriptorReader, ArtifactResolver, DependencyCollector, RepositorySystem, VersionRangeResolver {
+@Component(role = RepositorySystem.class, hint = "foss")
+public class FossRepositorySystem implements ArtifactDescriptorReader, ArtifactResolver, DependencyCollector, RepositorySystem, VersionRangeResolver {
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
@@ -98,21 +98,21 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
     private DependencyCollector dependencyCollector;
 
     private final boolean useJPP;
-    private final RemoteRepository fedoraRepository;
+    private final RemoteRepository fossRepository;
     private final MirrorSelector mirrorSelector;
 
 //    private WorkspaceReader jppRepository = new JavadirWorkspaceReader();
     private final JPPLocalRepositoryManager jppRepositoryManager = new JPPLocalRepositoryManager();
 
-    public FedoraRepositorySystem() {
+    public FossRepositorySystem() {
         this.useJPP = Boolean.getBoolean("fmvn.useJPP");
         // we only want to use this repository
-        this.fedoraRepository = new RemoteRepository("fedora", "default", System.getProperty("fmvn.repo", "file:/usr/share/maven/repository"));
+        this.fossRepository = new RemoteRepository("foss", "default", System.getProperty("fmvn.repo", "file:/usr/share/maven/repository"));
         this.mirrorSelector = new MirrorSelector() {
             @Override
             public RemoteRepository getMirror(RemoteRepository repository) {
-                logger.warn("Using mirror " + fedoraRepository + " for " + repository);
-                return fedoraRepository;
+                logger.warn("Using mirror " + fossRepository + " for " + repository);
+                return fossRepository;
             }
         };
     }
@@ -120,7 +120,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
     private void assertFedoraRepository(List<RemoteRepository> repositories) {
         if (repositories.size() != 1)
             throw new IllegalStateException("Wrong number of repositories in " + repositories);
-        if (!repositories.get(0).equals(fedoraRepository))
+        if (!repositories.get(0).equals(fossRepository))
             throw new IllegalStateException("Fedora repository not listed in " + repositories);
     }
 
@@ -139,7 +139,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         try {
             final Artifact artifact = request.getArtifact();
             final Artifact versionedArtifact = new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), version.toString(), artifact.getProperties(), artifact.getFile() );
-            final ArtifactRequest alternateRequest = new ArtifactRequest(versionedArtifact, singletonList(fedoraRepository), request.getRequestContext())
+            final ArtifactRequest alternateRequest = new ArtifactRequest(versionedArtifact, singletonList(fossRepository), request.getRequestContext())
                     .setTrace(request.getTrace());
             final ArtifactResult result = artifactResolver.resolveArtifact(session, alternateRequest);
             if (result.getExceptions().isEmpty())
@@ -149,7 +149,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         }
         */
         try {
-            final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+            final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                     .setTrace(request.getTrace());
             final ArtifactDescriptorResult result = delegate.readArtifactDescriptor(session, alternateRequest);
             if (result.getExceptions().isEmpty())
@@ -167,7 +167,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         this.delegate = delegate;
     }
 
-    public FedoraRepositorySystem setLogger(Logger logger) {
+    public FossRepositorySystem setLogger(Logger logger) {
         this.logger = (logger != null) ? logger : NullLogger.INSTANCE;
         return this;
     }
@@ -178,7 +178,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
 //        assertFedoraRepository(request.getRepositories());
         try {
             // try Fedora local repo
-            final VersionRangeRequest alternateRequest = new VersionRangeRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+            final VersionRangeRequest alternateRequest = new VersionRangeRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                     .setTrace(request.getTrace());
             final VersionRangeResult result = delegate.resolveVersionRange(session, alternateRequest);
 //            logger.warn("result = " + result.getVersions());
@@ -193,7 +193,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             // the Fedora local repo might be running without metadata
             // TODO: how to check that?
             if (hasArtifact(session, request, highestVersion)) {
-                result.setRepository(highestVersion, fedoraRepository);
+                result.setRepository(highestVersion, fossRepository);
                 return result;
             }
 
@@ -215,7 +215,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
 
     @Override
     public VersionResult resolveVersion(RepositorySystemSession session, VersionRequest request) throws VersionResolutionException {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveVersion");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveVersion");
     }
 
     @Override
@@ -231,7 +231,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         // try Fedora local repo
         {
             try {
-                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                         .setTrace(request.getTrace());
                 final ArtifactDescriptorResult result = delegate.readArtifactDescriptor(session, alternateRequest);
                 if (result.getExceptions().isEmpty())
@@ -244,7 +244,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         {
             try {
                 final Artifact alternateArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), LATEST_VERSION, artifact.getProperties(), artifact.getFile());
-                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(alternateArtifact, singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(alternateArtifact, singletonList(fossRepository), request.getRequestContext())
                         .setTrace(request.getTrace());
                 final ArtifactDescriptorResult result = delegate.readArtifactDescriptor(session, alternateRequest);
                 if (result.getExceptions().isEmpty()) {
@@ -262,7 +262,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
-                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactDescriptorRequest alternateRequest = new ArtifactDescriptorRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                         .setTrace(request.getTrace());
                 final ArtifactDescriptorResult result = delegate.readArtifactDescriptor(alternateSession, alternateRequest);
 //                logger.warn("result from JPP " + result);
@@ -282,7 +282,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         }
         if (originalException != null)
             throw originalException;
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.readArtifactDescriptor");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.readArtifactDescriptor");
     }
 
     @Override
@@ -299,7 +299,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
-                final CollectRequest alternateRequest = new CollectRequest(request.getRoot(), request.getDependencies(), singletonList(fedoraRepository))
+                final CollectRequest alternateRequest = new CollectRequest(request.getRoot(), request.getDependencies(), singletonList(fossRepository))
                         .setManagedDependencies(request.getManagedDependencies())
                         .setTrace(request.getTrace());
                 final CollectResult result = dependencyCollector.collectDependencies(alternateSession, alternateRequest);
@@ -323,7 +323,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
                         .setManagedDependencies(request.getManagedDependencies())
                         .setRequestContext(request.getRequestContext())
                         .setTrace(request.getTrace())
-                        .setRepositories(singletonList(fedoraRepository));
+                        .setRepositories(singletonList(fossRepository));
                 final CollectResult result = dependencyCollector.collectDependencies(session, alternateRequest);
                 logger.warn("collectDependencies: result = " + result);
                 if (result.getExceptions().isEmpty())
@@ -335,7 +335,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         }
         if (originalException != null)
             throw originalException;
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.collectDependencies");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.collectDependencies");
     }
 
     @Override
@@ -343,17 +343,17 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         debugf("resolveDependencies %s", request.getCollectRequest());
         // TODO: assert that the request does not traverse repos
         return delegate.resolveDependencies(session, request);
-//        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveDependencies");
+//        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveDependencies");
     }
 
     @Override
     public List<ArtifactResult> resolveDependencies(RepositorySystemSession session, DependencyNode node, DependencyFilter filter) throws ArtifactResolutionException {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveDependencies");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveDependencies");
     }
 
     @Override
     public List<ArtifactResult> resolveDependencies(RepositorySystemSession session, CollectRequest request, DependencyFilter filter) throws DependencyCollectionException, ArtifactResolutionException {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveDependencies");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveDependencies");
     }
 
     @Override
@@ -368,7 +368,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         // try Fedora local repo
         {
             try {
-                final ArtifactRequest alternateRequest = new ArtifactRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactRequest alternateRequest = new ArtifactRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                         .setDependencyNode(request.getDependencyNode())
                         .setTrace(request.getTrace());
                 final ArtifactResult result = artifactResolver.resolveArtifact(session, alternateRequest);
@@ -384,7 +384,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         {
             try {
                 final Artifact alternateArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), LATEST_VERSION, artifact.getProperties(), artifact.getFile());
-                final ArtifactRequest alternateRequest = new ArtifactRequest(alternateArtifact, Collections.singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactRequest alternateRequest = new ArtifactRequest(alternateArtifact, Collections.singletonList(fossRepository), request.getRequestContext())
                         .setTrace(request.getTrace());
                 final ArtifactResult result = delegate.resolveArtifact(session, alternateRequest);
                 if (result.getExceptions().isEmpty()) {
@@ -402,12 +402,12 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
             // use maven as much as possible
             final RepositorySystemSession alternateSession = openJPP(session);
             try {
-                final ArtifactRequest alternateRequest = new ArtifactRequest(request.getArtifact(), singletonList(fedoraRepository), request.getRequestContext())
+                final ArtifactRequest alternateRequest = new ArtifactRequest(request.getArtifact(), singletonList(fossRepository), request.getRequestContext())
                         .setDependencyNode(request.getDependencyNode())
                         .setTrace(request.getTrace());
                 final ArtifactResult result = artifactResolver.resolveArtifact(alternateSession, alternateRequest);
                 if (result.getExceptions().isEmpty()) {
-                    logger.warn("Could not find artifact " + artifact + " in " + fedoraRepository + ", using JPP " + result.getArtifact());
+                    logger.warn("Could not find artifact " + artifact + " in " + fossRepository + ", using JPP " + result.getArtifact());
                     return result;
                 }
             } catch (ArtifactResolutionException e) {
@@ -418,12 +418,12 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         }
         if (originalException != null)
             throw originalException;
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveArtifact");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveArtifact");
     }
 
     @Override
     public List<ArtifactResult> resolveArtifacts(RepositorySystemSession session, Collection<? extends ArtifactRequest> requests) throws ArtifactResolutionException {
-//        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveArtifacts");
+//        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveArtifacts");
         // Do this very straight forward instead of fast and complex
         final List<ArtifactResult> results = new ArrayList<ArtifactResult>(requests.size());
         for (ArtifactRequest request : requests) {
@@ -437,7 +437,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
         // TODO: JPP does not support metadata, but the Fedora repo might
         logger.warn("resolveMetadata " + requests);
         //return delegate.resolveMetadata(session, requests);
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.resolveMetadata");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.resolveMetadata");
 //        final List<MetadataResult> results = new ArrayList<MetadataResult>(requests.size());
 //        for (MetadataRequest request : requests) {
 //            results.add(new MetadataResult(request));
@@ -447,12 +447,12 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
 
     @Override
     public InstallResult install(RepositorySystemSession session, InstallRequest request) throws InstallationException {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.install");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.install");
     }
 
     @Override
     public DeployResult deploy(RepositorySystemSession session, DeployRequest request) throws DeploymentException {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.deploy");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.deploy");
     }
 
     @Override
@@ -462,7 +462,7 @@ public class FedoraRepositorySystem implements ArtifactDescriptorReader, Artifac
 
     @Override
     public SyncContext newSyncContext(RepositorySystemSession session, boolean shared) {
-        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FedoraRepositorySystem.newSyncContext");
+        throw new RuntimeException("NYI: org.fedoraproject.maven.repository.internal.FossRepositorySystem.newSyncContext");
     }
 
     private RepositorySystemSession openJPP(final RepositorySystemSession current) {

@@ -36,12 +36,12 @@ import org.apache.maven.model.io.ModelParseException;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class FedoraModelProblemCollector implements ModelProblemCollector {
+public class FossModelProblemCollector implements ModelProblemCollector {
     private final List<ModelProblem> problems;
     private final String modelId;
     private final String source;
 
-    public FedoraModelProblemCollector(final ModelBuildingResult result) {
+    public FossModelProblemCollector(final ModelBuildingResult result) {
         final Model model = result.getEffectiveModel();
         this.problems = result.getProblems();
         this.modelId = toId(model);

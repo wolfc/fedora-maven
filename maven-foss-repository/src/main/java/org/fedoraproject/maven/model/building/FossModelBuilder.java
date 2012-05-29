@@ -39,7 +39,7 @@ import org.sonatype.aether.spi.log.NullLogger;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @Component(role = ModelBuilder.class)
-public class FedoraModelBuilder implements ModelBuilder {
+public class FossModelBuilder implements ModelBuilder {
     @Requirement
     private Logger logger = NullLogger.INSTANCE;
 
@@ -80,7 +80,7 @@ public class FedoraModelBuilder implements ModelBuilder {
         }
         Model resultModel = result.getEffectiveModel();
 
-        final FedoraModelProblemCollector problems = new FedoraModelProblemCollector(result);
+        final FossModelProblemCollector problems = new FossModelProblemCollector(result);
         defaultModelValidator.validateEffectiveModel(resultModel,  request, problems);
         return result;
     }
