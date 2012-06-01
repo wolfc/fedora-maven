@@ -4,3 +4,4 @@ target
 *.iml
 # mnv-rpmbuild
 /.m2
+*.DS_Store
