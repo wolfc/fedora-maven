@@ -100,7 +100,8 @@ public class FossRepositorySystem
     @Requirement
     private DependencyCollector dependencyCollector;
 
-    private final boolean useJPP;
+    private boolean useJpp;
+
     private final RemoteRepository fossRepository;
     private final MirrorSelector mirrorSelector;
 
@@ -109,7 +110,7 @@ public class FossRepositorySystem
         new JPPLocalRepositoryManager();
 
     public FossRepositorySystem() {
-        this.useJPP = Boolean.getBoolean("fre.useJPP");
+        this.useJpp = Boolean.getBoolean("fre.useJpp");
 
         // we only want to use this repository
         this.fossRepository = new RemoteRepository("foss", "default",
@@ -199,16 +200,34 @@ public class FossRepositorySystem
     }
 
     public void setDefaultRepositorySystem(DefaultRepositorySystem delegate) {
-        if (delegate == null)
+        if (delegate == null) {
             throw new IllegalArgumentException(
                     "default repository system has not been specified");
+        }
 
         this.delegate = delegate;
+    }
+
+    public void setArtifactResolver(ArtifactResolver artifactResolver) {
+        if (artifactResolver == null) {
+            throw new IllegalArgumentException(
+                    "artifact resolver has not been specified");
+        }
+
+        this.artifactResolver = artifactResolver;
+    }
+
+    public void setUseJpp(boolean value) {
+        this.useJpp = value;
     }
 
     public FossRepositorySystem setLogger(Logger logger) {
         this.logger = (logger != null) ? logger : NullLogger.INSTANCE;
         return this;
+    }
+
+    public RemoteRepository getRepository() {
+        return fossRepository;
     }
 
     @Override
@@ -247,7 +266,7 @@ public class FossRepositorySystem
                 return result;
             }
 
-            if (!useJPP)
+            if (!useJpp)
                 return result;
 
             // try JPP local repo
@@ -340,9 +359,9 @@ public class FossRepositorySystem
             }
         }
         // try JPP local repo
-        if (useJPP) {
+        if (useJpp) {
             // use maven as much as possible
-            final RepositorySystemSession alternateSession = openJPP(session);
+            final RepositorySystemSession alternateSession = openJpp(session);
             try {
                 final ArtifactDescriptorRequest alternateRequest =
                         new ArtifactDescriptorRequest(request.getArtifact(),
@@ -396,9 +415,9 @@ public class FossRepositorySystem
 
         // TODO: work in progress, we need to aggregate all
         // try JPP local repo
-        if (useJPP) {
+        if (useJpp) {
             // use maven as much as possible
-            final RepositorySystemSession alternateSession = openJPP(session);
+            final RepositorySystemSession alternateSession = openJpp(session);
             try {
                 final CollectRequest alternateRequest =
                         new CollectRequest(request.getRoot(),
@@ -505,7 +524,7 @@ public class FossRepositorySystem
             throws ArtifactResolutionException {
 
         debugf("resolveArtifact %s", request);
-        validateSession(session);
+        //validateSession(session);
 
         // delegate has been wired up to come back to us, so this must be a real
         // implementation
@@ -527,8 +546,9 @@ public class FossRepositorySystem
                 final ArtifactResult result = artifactResolver.resolveArtifact(
                         session, alternateRequest);
 
-                if (result.getExceptions().isEmpty())
+                if (result.getExceptions().isEmpty()) {
                     return result;
+                }
             } catch (ArtifactResolutionException e) {
                 originalException = e;
             }
@@ -551,9 +571,12 @@ public class FossRepositorySystem
                                 Collections.singletonList(fossRepository),
                                 request.getRequestContext());
 
+                alternateRequest.setDependencyNode(request.getDependencyNode());
                 alternateRequest.setTrace(request.getTrace());
-                final ArtifactResult result =
-                        delegate.resolveArtifact(session, alternateRequest);
+
+                final ArtifactResult result = artifactResolver.resolveArtifact(
+                        session, alternateRequest);
+
                 if (result.getExceptions().isEmpty()) {
                     logger.warn("Could not find artifact " + artifact +
                             ", using LATEST " + result.getArtifact());
@@ -561,15 +584,16 @@ public class FossRepositorySystem
                 }
             } catch (ArtifactResolutionException e) {
                 logger.debug("LATEST resolution of " + artifact + " failed", e);
-                if (originalException == null)
+                if (originalException == null) {
                     originalException = e;
+                }
             }
         }
 
         // try JPP local repo
-        if (useJPP) {
+        if (useJpp) {
             // use maven as much as possible
-            final RepositorySystemSession alternateSession = openJPP(session);
+            final RepositorySystemSession alternateSession = openJpp(session);
             try {
                 final ArtifactRequest alternateRequest =
                         new ArtifactRequest(request.getArtifact(),
@@ -581,6 +605,7 @@ public class FossRepositorySystem
 
                 final ArtifactResult result = artifactResolver.resolveArtifact(
                         alternateSession, alternateRequest);
+
                 if (result.getExceptions().isEmpty()) {
                     logger.warn("Could not find artifact " + artifact + " in " +
                             fossRepository + ", using JPP " +
@@ -595,8 +620,9 @@ public class FossRepositorySystem
             }
         }
 
-        if (originalException != null)
+        if (originalException != null) {
             throw originalException;
+        }
 
         throw new RuntimeException(
                 "NYI: org.fedoraproject.maven.repository.internal." +
@@ -678,10 +704,10 @@ public class FossRepositorySystem
                 "FossRepositorySystem.newSyncContext");
     }
 
-    private RepositorySystemSession openJPP(
+    private RepositorySystemSession openJpp(
             final RepositorySystemSession current) {
 
-        assert useJPP : "useJPP is not set";
+        assert useJpp : "useJpp is not set";
         final RepositorySystemSession alternateSession =
                 new DefaultRepositorySystemSession(current)
                 .setOffline(true)
