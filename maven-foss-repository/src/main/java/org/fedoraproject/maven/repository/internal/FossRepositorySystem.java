@@ -524,7 +524,7 @@ public class FossRepositorySystem
             throws ArtifactResolutionException {
 
         debugf("resolveArtifact %s", request);
-        //validateSession(session);
+        validateSession(session);
 
         // delegate has been wired up to come back to us, so this must be a real
         // implementation

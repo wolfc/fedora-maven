@@ -48,7 +48,7 @@ public class StubArtifactResolver implements ArtifactResolver {
     public static final String JPP_VERSION = "JPP";
 
     public enum ResolverMode {
-        EXACT, LATEST, JPP
+        EXACT, LATEST, JPP, FAIL
     }
 
     public static ResolverMode mode = ResolverMode.EXACT;
@@ -66,9 +66,9 @@ public class StubArtifactResolver implements ArtifactResolver {
             Collection<? extends ArtifactRequest> requests)
             throws ArtifactResolutionException {
 
-
         List<ArtifactResult> results =
                 new ArrayList<ArtifactResult>(requests.size());
+        boolean failures = false;
 
         for (ArtifactRequest request : requests) {
             List<RemoteRepository> repositories = request.getRepositories();
@@ -100,9 +100,14 @@ public class StubArtifactResolver implements ArtifactResolver {
                 result.setArtifact(artifact);
                 result.setRepository(repositories.get(0));
             } else {
+                failures = true;
                 result.addException(new ArtifactNotFoundException(artifact, null));
             }
             results.add(result);
+        }
+
+        if (failures) {
+            throw new ArtifactResolutionException(results);
         }
 
         return results;
