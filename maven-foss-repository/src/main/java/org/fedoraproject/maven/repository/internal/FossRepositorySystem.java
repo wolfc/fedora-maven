@@ -422,10 +422,9 @@ public class FossRepositorySystem
                 final CollectRequest alternateRequest =
                         new CollectRequest(request.getRoot(),
                                 request.getDependencies(),
-                                singletonList(fossRepository));
-
-                alternateRequest.setManagedDependencies(request.getManagedDependencies());
-                alternateRequest.setTrace(request.getTrace());
+                                singletonList(fossRepository))
+                                .setManagedDependencies(request.getManagedDependencies())
+                                .setTrace(request.getTrace());
 
                 final CollectResult result =
                         dependencyCollector.collectDependencies(
@@ -433,17 +432,14 @@ public class FossRepositorySystem
 
                 if (result.getExceptions().isEmpty()
                         && result.getRoot() != null) {
-
                     logger.warn("collectDependencies: result from JPP " + result);
 //                    logger.warn("TODO");
                     return result;
                 }
             } catch (DependencyCollectionException e) {
-                logger.debug("JPP collect dependencies of "
-                        + request + " failed", e);
-
-                if (originalException == null)
-                    originalException = e;
+                logger.debug("JPP collect dependencies of " + request +
+                        " failed", e);
+                originalException = e;
             }
         }
 
@@ -463,16 +459,20 @@ public class FossRepositorySystem
                                 alternateRequest);
 
                 logger.warn("collectDependencies: result = " + result);
-                if (result.getExceptions().isEmpty())
+                if (result.getExceptions().isEmpty()) {
                     return result;
+                }
             } catch (DependencyCollectionException e) {
                 logger.warn("collect dependencies failed ", e);
-                originalException = e;
+                if (originalException == null) {
+                    originalException = e;
+                }
             }
         }
 
-        if (originalException != null)
+        if (originalException != null) {
             throw originalException;
+        }
 
         throw new RuntimeException(
                 "NYI: org.fedoraproject.maven.repository.internal." +
@@ -708,12 +708,9 @@ public class FossRepositorySystem
             final RepositorySystemSession current) {
 
         assert useJpp : "useJpp is not set";
-        final RepositorySystemSession alternateSession =
-                new DefaultRepositorySystemSession(current)
+        return new DefaultRepositorySystemSession(current)
                 .setOffline(true)
 //                .setWorkspaceReader(jppRepository);
                 .setLocalRepositoryManager(jppRepositoryManager);
-
-        return alternateSession;
     }
 }
