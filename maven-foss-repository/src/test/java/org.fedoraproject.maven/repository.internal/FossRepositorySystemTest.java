@@ -28,14 +28,12 @@ import org.junit.Test;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.artifact.ArtifactTypeRegistry;
 import org.sonatype.aether.repository.MirrorSelector;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.*;
 import org.sonatype.aether.test.impl.TestRepositorySystemSession;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.sonatype.aether.util.repository.DefaultMirrorSelector;
+import org.sonatype.aether.version.Version;
 
 import java.io.IOException;
 
@@ -57,6 +55,7 @@ public class FossRepositorySystemTest {
     @Before
     public void setup() throws IOException {
         repositorySystem = new FossRepositorySystem();
+        repositorySystem.setDefaultRepositorySystem(new StubDefaultRepositorySystem());
         repositorySystem.setArtifactResolver(new StubArtifactResolver());
 
         session = new TestRepositorySystemSession() {
@@ -77,6 +76,21 @@ public class FossRepositorySystemTest {
         };
 
         artifact = new DefaultArtifact("gid", "aid", "", "ext", "ver");
+    }
+
+    @Test
+    public void testResolveVersionRangeSuccessful()
+            throws VersionRangeResolutionException {
+
+        VersionRangeRequest request =
+                new VersionRangeRequest(artifact, null, null);
+        VersionRangeResult result =
+                repositorySystem.resolveVersionRange(session, request);
+
+        // the highest version is the only version of interest at the moment
+        Version highestVersion = result.getHighestVersion();
+        assertEquals(repositorySystem.getRepository(),
+                result.getRepository(highestVersion));
     }
 
     @Test

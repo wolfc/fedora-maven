@@ -151,8 +151,9 @@ public class FossRepositorySystem
             final VersionRangeRequest request,
             final Version version) {
 
-        if (version == null)
+        if (version == null) {
             return false;
+        }
 
         /* this will blow, because it'll try to find a jar for a pom artifact
         try {
@@ -185,17 +186,18 @@ public class FossRepositorySystem
                     new ArtifactDescriptorRequest(
                             request.getArtifact(),
                             singletonList(fossRepository),
-                            request.getRequestContext());
-
-            alternateRequest.setTrace(request.getTrace());
+                            request.getRequestContext())
+                            .setTrace(request.getTrace());
 
             final ArtifactDescriptorResult result =
                     delegate.readArtifactDescriptor(session, alternateRequest);
-            if (result.getExceptions().isEmpty())
+            if (result.getExceptions().isEmpty()) {
                 return true;
+            }
         } catch (ArtifactDescriptorException e) {
             throw new RuntimeException(e);
         }
+
         return false;
     }
 
@@ -243,20 +245,22 @@ public class FossRepositorySystem
             final VersionRangeRequest alternateRequest =
                     new VersionRangeRequest(request.getArtifact(),
                             singletonList(fossRepository),
-                            request.getRequestContext());
-
-            alternateRequest.setTrace(request.getTrace());
+                            request.getRequestContext())
+                            .setTrace(request.getTrace());
 
             final VersionRangeResult result =
                     delegate.resolveVersionRange(session, alternateRequest);
 //            logger.warn("result = " + result.getVersions());
+
             final Version highestVersion = result.getHighestVersion();
+
             if (result.getExceptions().isEmpty()) {
                 // Did we find something in the repo?
                 // TODO: this is the best thing I could think off, what is the correct check?
                 if (highestVersion != null
-                        && result.getRepository(highestVersion) != null)
+                        && result.getRepository(highestVersion) != null) {
                     return result;
+                }
             }
 
             // the Fedora local repo might be running without metadata
@@ -266,14 +270,16 @@ public class FossRepositorySystem
                 return result;
             }
 
-            if (!useJpp)
+            if (!useJpp) {
                 return result;
+            }
 
             // try JPP local repo
             // JPP will always return something regardless of the version, but
             // without a version readArtifactDescriptor will go into the
             // DefaultVersionResolver so we can't put in LATEST.
 //            throw new RuntimeException("NYI");
+            // TODO: what if highestVersion is null?
             result.setRepository(highestVersion,
                     jppRepositoryManager.getRepository());
             logger.warn("Could not resolve version range " + request +
@@ -316,14 +322,14 @@ public class FossRepositorySystem
                 final ArtifactDescriptorRequest alternateRequest =
                         new ArtifactDescriptorRequest(request.getArtifact(),
                                 singletonList(fossRepository),
-                                request.getRequestContext());
-
-                alternateRequest.setTrace(request.getTrace());
+                                request.getRequestContext())
+                                .setTrace(request.getTrace());
 
                 final ArtifactDescriptorResult result =
                         delegate.readArtifactDescriptor(session, alternateRequest);
-                if (result.getExceptions().isEmpty())
+                if (result.getExceptions().isEmpty()) {
                     return result;
+                }
             } catch (ArtifactDescriptorException e) {
                 originalException = e;
             }

@@ -71,12 +71,6 @@ public class StubArtifactResolver implements ArtifactResolver {
         boolean failures = false;
 
         for (ArtifactRequest request : requests) {
-            List<RemoteRepository> repositories = request.getRepositories();
-            if (repositories.size() != 1) {
-                throw new IllegalStateException(
-                        "Wrong number of repositories in " + repositories);
-            }
-
             ArtifactResult result = new ArtifactResult(request);
             Artifact artifact = request.getArtifact();
 
@@ -98,7 +92,9 @@ public class StubArtifactResolver implements ArtifactResolver {
                         break;
                 }
                 result.setArtifact(artifact);
-                result.setRepository(repositories.get(0));
+
+                TestUtils.assertSingleRepository(request.getRepositories());
+                result.setRepository(request.getRepositories().get(0));
             } else {
                 failures = true;
                 result.addException(new ArtifactNotFoundException(artifact, null));
