@@ -296,6 +296,24 @@ public class FossRepositorySystem
             VersionRequest request)
             throws VersionResolutionException {
 
+        debugf("resolveVersion %s", request);
+        try {
+            // try FOSS repo
+            final VersionRequest alternateRequest =
+                    new VersionRequest(request.getArtifact(),
+                            singletonList(fossRepository),
+                            request.getRequestContext())
+                            .setTrace(request.getTrace());
+
+            final VersionResult result =
+                    delegate.resolveVersion(session, alternateRequest);
+            if (result.getExceptions().isEmpty()) {
+                return result;
+            }
+        } catch (VersionResolutionException e) {
+            throw e;
+        }
+
         throw new RuntimeException(
                 "NYI: org.fedoraproject.maven.repository.internal." +
                 "FossRepositorySystem.resolveVersion");
