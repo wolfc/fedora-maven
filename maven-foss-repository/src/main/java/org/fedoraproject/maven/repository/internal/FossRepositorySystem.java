@@ -201,26 +201,33 @@ public class FossRepositorySystem
         return false;
     }
 
-    public void setDefaultRepositorySystem(DefaultRepositorySystem delegate) {
+    public FossRepositorySystem setDefaultRepositorySystem(
+            DefaultRepositorySystem delegate) {
+
         if (delegate == null) {
             throw new IllegalArgumentException(
                     "default repository system has not been specified");
         }
 
         this.delegate = delegate;
+        return this;
     }
 
-    public void setArtifactResolver(ArtifactResolver artifactResolver) {
+    public FossRepositorySystem setArtifactResolver(
+            ArtifactResolver artifactResolver) {
+
         if (artifactResolver == null) {
             throw new IllegalArgumentException(
                     "artifact resolver has not been specified");
         }
 
         this.artifactResolver = artifactResolver;
+        return this;
     }
 
-    public void setUseJpp(boolean value) {
+    public FossRepositorySystem setUseJpp(boolean value) {
         this.useJpp = value;
+        return this;
     }
 
     public FossRepositorySystem setLogger(Logger logger) {
@@ -228,8 +235,12 @@ public class FossRepositorySystem
         return this;
     }
 
-    public RemoteRepository getRepository() {
+    public RemoteRepository getRemoteRepository() {
         return fossRepository;
+    }
+
+    public JPPLocalRepositoryManager getJppRepositoryManager() {
+        return jppRepositoryManager;
     }
 
     @Override
@@ -639,8 +650,9 @@ public class FossRepositorySystem
             } catch (ArtifactResolutionException e) {
                 logger.debug("JPP resolution of " + artifact + " failed", e);
 
-                if (originalException == null)
+                if (originalException == null) {
                     originalException = e;
+                }
             }
         }
 

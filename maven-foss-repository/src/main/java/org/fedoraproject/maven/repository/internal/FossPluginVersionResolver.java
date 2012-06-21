@@ -61,7 +61,7 @@ public class FossPluginVersionResolver implements PluginVersionResolver {
                 ":" + request.getArtifactId() + ", falling back to RELEASE");
         //final PluginVersionResult result = delegate.resolve(request);
 //        logger.warn("Would have been " + result.getVersion() + " from " +
-//                result.getRepository());
+//                result.getRemoteRepository());
         return new PluginVersionResult() {
             @Override
             public String getVersion() {
@@ -70,7 +70,7 @@ public class FossPluginVersionResolver implements PluginVersionResolver {
 
             @Override
             public ArtifactRepository getRepository() {
-                throw new RuntimeException("NYI: .getRepository");
+                throw new RuntimeException("NYI: .getRemoteRepository");
             }
         };
     }
