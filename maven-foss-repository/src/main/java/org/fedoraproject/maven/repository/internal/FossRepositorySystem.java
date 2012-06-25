@@ -103,7 +103,6 @@ public class FossRepositorySystem
     private boolean useJpp;
 
     private final RemoteRepository fossRepository;
-    private final MirrorSelector mirrorSelector;
 
 //    private WorkspaceReader jppRepository = new JavadirWorkspaceReader();
     private final JPPLocalRepositoryManager jppRepositoryManager =
@@ -115,14 +114,6 @@ public class FossRepositorySystem
         // we only want to use this repository
         this.fossRepository = new RemoteRepository("foss", "default",
                 System.getProperty("fre.repo", "file:/usr/share/maven/repository"));
-
-        this.mirrorSelector = new MirrorSelector() {
-            @Override
-            public RemoteRepository getMirror(RemoteRepository repository) {
-                logger.warn("Using mirror " + fossRepository + " for " + repository);
-                return fossRepository;
-            }
-        };
     }
 
     private void assertFedoraRepository(List<RemoteRepository> repositories) {
@@ -336,13 +327,6 @@ public class FossRepositorySystem
             ArtifactDescriptorRequest request)
             throws ArtifactDescriptorException {
 
-        /* bummer
-        final RepositorySystemSession alternateSession =
-                new DefaultRepositorySystemSession(session);
-
-        alternateSession.setOffline(false);
-        alternateSession.setMirrorSelector(mirrorSelector);
-        */
         ArtifactDescriptorException originalException = null;
         final Artifact artifact = request.getArtifact();
         // try FOSS local repo
@@ -367,17 +351,13 @@ public class FossRepositorySystem
         {
             try {
                 final Artifact alternateArtifact =
-                        new DefaultArtifact(artifact.getGroupId(),
-                                artifact.getArtifactId(), artifact.getClassifier(),
-                                artifact.getExtension(), LATEST_VERSION,
-                                artifact.getProperties(), artifact.getFile());
+                        artifact.setVersion(LATEST_VERSION);
 
                 final ArtifactDescriptorRequest alternateRequest =
                         new ArtifactDescriptorRequest(alternateArtifact,
                                 singletonList(fossRepository),
-                                request.getRequestContext());
-
-                alternateRequest.setTrace(request.getTrace());
+                                request.getRequestContext())
+                                .setTrace(request.getTrace());
 
                 final ArtifactDescriptorResult result =
                         delegate.readArtifactDescriptor(session, alternateRequest);
@@ -389,8 +369,9 @@ public class FossRepositorySystem
                 }
             } catch (ArtifactDescriptorException e) {
                 logger.debug("LATEST resolution of " + artifact + " failed", e);
-                if (originalException == null)
+                if (originalException == null) {
                     originalException = e;
+                }
             }
         }
         // try JPP local repo
@@ -421,13 +402,15 @@ public class FossRepositorySystem
                 }
             } catch (ArtifactDescriptorException e) {
                 logger.debug("JPP resolution of " + artifact + " failed", e);
-                if (originalException == null)
+                if (originalException == null) {
                     originalException = e;
+                }
             }
         }
 
-        if (originalException != null)
+        if (originalException != null) {
             throw originalException;
+        }
 
         throw new RuntimeException(
                 "NYI: org.fedoraproject.maven.repository.internal." +
