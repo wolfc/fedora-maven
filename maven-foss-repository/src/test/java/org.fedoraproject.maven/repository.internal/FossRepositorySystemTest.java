@@ -55,6 +55,8 @@ public class FossRepositorySystemTest {
 
     private FossRepositorySystem repositorySystem;
 
+    private RemoteRepository fossRepository;
+
     @Mock private ArtifactResolver artifactResolver;
 
     @Mock private DefaultRepositorySystem defaultRepositorySystem;
@@ -67,22 +69,24 @@ public class FossRepositorySystemTest {
     public void setup() throws IOException, ArtifactResolutionException {
         MockitoAnnotations.initMocks(this);
 
+        // allow the session to pass validation
+        // should we be stubbing the validator instead?
+        session = mock(RepositorySystemSession.class, Mockito.RETURNS_MOCKS);
+
         repositorySystem = new FossRepositorySystem()
                 .setDefaultRepositorySystem(defaultRepositorySystem)
                 .setArtifactResolver(artifactResolver)
                 .setUseJpp(true);
 
-        // allow the session to pass validation
-        // should we be stubbing the validator instead?
-        session = mock(RepositorySystemSession.class, Mockito.RETURNS_MOCKS);
+        fossRepository = repositorySystem.getRemoteRepository();
+        artifact = new DefaultArtifact("gid", "aid", "", "ext", "ver");
 
         ArtifactResult failedResult = new ArtifactResult(new ArtifactRequest())
                 .addException(new ArtifactNotFoundException(artifact, null));
+
         when(artifactResolver.resolveArtifact(
                 any(RepositorySystemSession.class), any(ArtifactRequest.class)))
                 .thenReturn(failedResult);
-
-        artifact = new DefaultArtifact("gid", "aid", "", "ext", "ver");
     }
 
     @Test
@@ -95,18 +99,16 @@ public class FossRepositorySystemTest {
         Version version = new StubVersion(null);
         VersionRangeResult successfulResult = new VersionRangeResult(request)
                 .addVersion(version)
-                .setRepository(version, repositorySystem.getRemoteRepository());
+                .setRepository(version, fossRepository);
+
         when(defaultRepositorySystem.resolveVersionRange(
                 eq(session), isValidVersionRangeRequest(artifact.getVersion())))
                 .thenReturn(successfulResult);
 
-        VersionRangeResult result =
+        VersionRangeResult actualResult =
                 repositorySystem.resolveVersionRange(session, request);
 
-        // the highest version is the only version of interest at the moment
-        Version highestVersion = result.getHighestVersion();
-        assertEquals(repositorySystem.getRemoteRepository(),
-                result.getRepository(highestVersion));
+        assertEquals(successfulResult, actualResult);
     }
 
     @Test
@@ -117,15 +119,16 @@ public class FossRepositorySystemTest {
 
         ArtifactResult successfulResult = new ArtifactResult(request)
                 .setArtifact(artifact)
-                .setRepository(repositorySystem.getRemoteRepository());
+                .setRepository(fossRepository);
+
         when(artifactResolver.resolveArtifact(
                 eq(session), isValidArtifactRequest(artifact.getVersion())))
                 .thenReturn(successfulResult);
 
-        ArtifactResult result = repositorySystem.resolveArtifact(session, request);
+        ArtifactResult actualResult =
+                repositorySystem.resolveArtifact(session, request);
 
-        assertEquals(repositorySystem.getRemoteRepository(), result.getRepository());
-        assertEquals(artifact, result.getArtifact());
+        assertEquals(successfulResult, actualResult);
     }
 
     @Test
@@ -137,21 +140,19 @@ public class FossRepositorySystemTest {
         Artifact latestArtifact = new DefaultArtifact(artifact.getGroupId(),
                 artifact.getArtifactId(), artifact.getClassifier(),
                 LATEST_VERSION);
+
         ArtifactResult successfulResult = new ArtifactResult(request)
                 .setArtifact(latestArtifact)
-                .setRepository(repositorySystem.getRemoteRepository());
+                .setRepository(fossRepository);
+
         when(artifactResolver.resolveArtifact(
                 eq(session), isValidArtifactRequest(LATEST_VERSION)))
                 .thenReturn(successfulResult);
 
-        ArtifactResult result = repositorySystem.resolveArtifact(session, request);
+        ArtifactResult actualResult =
+                repositorySystem.resolveArtifact(session, request);
 
-        assertEquals(repositorySystem.getRemoteRepository(), result.getRepository());
-
-        Artifact resolved = result.getArtifact();
-        assertEquals(artifact.getGroupId(), resolved.getGroupId());
-        assertEquals(artifact.getArtifactId(), resolved.getArtifactId());
-        assertEquals(LATEST_VERSION, resolved.getVersion());
+        assertEquals(successfulResult, actualResult);
     }
 
     @Test
@@ -162,19 +163,16 @@ public class FossRepositorySystemTest {
 
         ArtifactResult successfulResult = new ArtifactResult(request)
                 .setArtifact(artifact)
-                .setRepository(repositorySystem.getRemoteRepository());
+                .setRepository(fossRepository);
+
         when(artifactResolver.resolveArtifact(
                 isJppSession(), isValidArtifactRequest(artifact.getVersion())))
                 .thenReturn(successfulResult);
 
-        ArtifactResult result = repositorySystem.resolveArtifact(session, request);
+        ArtifactResult actualResult =
+                repositorySystem.resolveArtifact(session, request);
 
-        assertEquals(repositorySystem.getRemoteRepository(), result.getRepository());
-
-        Artifact resolved = result.getArtifact();
-        assertEquals(artifact.getGroupId(), resolved.getGroupId());
-        assertEquals(artifact.getArtifactId(), resolved.getArtifactId());
-        assertEquals(artifact.getVersion(), resolved.getVersion());
+        assertEquals(successfulResult, actualResult);
     }
 
     @SuppressWarnings("unchecked")
@@ -206,9 +204,6 @@ public class FossRepositorySystemTest {
         public boolean matches(Object rangeRequest) {
             VersionRangeRequest request = ((VersionRangeRequest) rangeRequest);
 
-            RemoteRepository fossRepository
-                    = repositorySystem.getRemoteRepository();
-
             return request.getRepositories().size() == 1
                     && request.getRepositories().get(0) == fossRepository
                     && request.getArtifact().getVersion().equals(version);
@@ -230,9 +225,6 @@ public class FossRepositorySystemTest {
 
         public boolean matches(Object artifactRequest) {
             ArtifactRequest request = ((ArtifactRequest) artifactRequest);
-
-            RemoteRepository fossRepository
-                    = repositorySystem.getRemoteRepository();
 
             return request.getRepositories().size() == 1
                     && request.getRepositories().get(0) == fossRepository
