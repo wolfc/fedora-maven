@@ -573,17 +573,17 @@ public class FossRepositorySystem
                 final ArtifactRequest alternateRequest =
                         new ArtifactRequest(request.getArtifact(),
                                 singletonList(fossRepository),
-                                request.getRequestContext());
-
-                alternateRequest.setDependencyNode(request.getDependencyNode());
-                alternateRequest.setTrace(request.getTrace());
+                                request.getRequestContext())
+                                .setDependencyNode(request.getDependencyNode())
+                                .setTrace(request.getTrace());
 
                 final ArtifactResult result = artifactResolver.resolveArtifact(
                         session, alternateRequest);
 
-                if (result.getExceptions().isEmpty()) {
+                // A successful result can contain exceptions
+                //if (result.getExceptions().isEmpty()) {
                     return result;
-                }
+                //}
             } catch (ArtifactResolutionException e) {
                 originalException = e;
             }
@@ -604,19 +604,19 @@ public class FossRepositorySystem
                 final ArtifactRequest alternateRequest =
                         new ArtifactRequest(alternateArtifact,
                                 Collections.singletonList(fossRepository),
-                                request.getRequestContext());
-
-                alternateRequest.setDependencyNode(request.getDependencyNode());
-                alternateRequest.setTrace(request.getTrace());
+                                request.getRequestContext())
+                                .setDependencyNode(request.getDependencyNode())
+                                .setTrace(request.getTrace());
 
                 final ArtifactResult result = artifactResolver.resolveArtifact(
                         session, alternateRequest);
 
-                if (result.getExceptions().isEmpty()) {
+                // A successful result can contain exceptions
+                //if (result.getExceptions().isEmpty()) {
                     logger.warn("Could not find artifact " + artifact +
                             ", using LATEST " + result.getArtifact());
                     return result;
-                }
+                //}
             } catch (ArtifactResolutionException e) {
                 logger.debug("LATEST resolution of " + artifact + " failed", e);
                 if (originalException == null) {
@@ -633,23 +633,22 @@ public class FossRepositorySystem
                 final ArtifactRequest alternateRequest =
                         new ArtifactRequest(request.getArtifact(),
                                 singletonList(fossRepository),
-                                request.getRequestContext());
-
-                alternateRequest.setDependencyNode(request.getDependencyNode());
-                alternateRequest.setTrace(request.getTrace());
+                                request.getRequestContext())
+                                .setDependencyNode(request.getDependencyNode())
+                                .setTrace(request.getTrace());
 
                 final ArtifactResult result = artifactResolver.resolveArtifact(
                         alternateSession, alternateRequest);
 
-                if (result.getExceptions().isEmpty()) {
+                // A successful result can contain exceptions
+                //if (result.getExceptions().isEmpty()) {
                     logger.warn("Could not find artifact " + artifact + " in " +
                             fossRepository + ", using JPP " +
                             result.getArtifact());
                     return result;
-                }
+                //}
             } catch (ArtifactResolutionException e) {
                 logger.debug("JPP resolution of " + artifact + " failed", e);
-
                 if (originalException == null) {
                     originalException = e;
                 }

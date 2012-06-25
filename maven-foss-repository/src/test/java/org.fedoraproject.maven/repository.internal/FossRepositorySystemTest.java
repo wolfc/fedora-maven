@@ -45,8 +45,7 @@ import java.io.IOException;
 import static org.apache.maven.artifact.Artifact.LATEST_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author <a href="mailto:mark.cafaro@gmail.com">Mark Cafaro</a>
@@ -81,12 +80,10 @@ public class FossRepositorySystemTest {
         fossRepository = repositorySystem.getRemoteRepository();
         artifact = new DefaultArtifact("gid", "aid", "", "ext", "ver");
 
-        ArtifactResult failedResult = new ArtifactResult(new ArtifactRequest())
-                .addException(new ArtifactNotFoundException(artifact, null));
-
-        when(artifactResolver.resolveArtifact(
-                any(RepositorySystemSession.class), any(ArtifactRequest.class)))
-                .thenReturn(failedResult);
+        // default behavior
+        doThrow(ArtifactResolutionException.class)
+                .when(artifactResolver).resolveArtifact(
+                any(RepositorySystemSession.class), any(ArtifactRequest.class));
     }
 
     @Test
@@ -121,9 +118,8 @@ public class FossRepositorySystemTest {
                 .setArtifact(artifact)
                 .setRepository(fossRepository);
 
-        when(artifactResolver.resolveArtifact(
-                eq(session), isValidArtifactRequest(artifact.getVersion())))
-                .thenReturn(successfulResult);
+        doReturn(successfulResult).when(artifactResolver).resolveArtifact(
+                eq(session), isValidArtifactRequest(artifact.getVersion()));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -145,9 +141,8 @@ public class FossRepositorySystemTest {
                 .setArtifact(latestArtifact)
                 .setRepository(fossRepository);
 
-        when(artifactResolver.resolveArtifact(
-                eq(session), isValidArtifactRequest(LATEST_VERSION)))
-                .thenReturn(successfulResult);
+        doReturn(successfulResult).when(artifactResolver).resolveArtifact(
+                eq(session), isValidArtifactRequest(LATEST_VERSION));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -165,9 +160,8 @@ public class FossRepositorySystemTest {
                 .setArtifact(artifact)
                 .setRepository(fossRepository);
 
-        when(artifactResolver.resolveArtifact(
-                isJppSession(), isValidArtifactRequest(artifact.getVersion())))
-                .thenReturn(successfulResult);
+        doReturn(successfulResult).when(artifactResolver).resolveArtifact(
+                isJppSession(), isValidArtifactRequest(artifact.getVersion()));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -182,10 +176,7 @@ public class FossRepositorySystemTest {
 
         ArtifactRequest request = new ArtifactRequest(artifact, null, "");
 
-        when(artifactResolver.resolveArtifact(
-                any(RepositorySystemSession.class), any(ArtifactRequest.class)))
-                .thenThrow(ArtifactResolutionException.class);
-
+        // relying on default artifact resolver behavior to throw exception
         repositorySystem.resolveArtifact(session, request);
     }
 
