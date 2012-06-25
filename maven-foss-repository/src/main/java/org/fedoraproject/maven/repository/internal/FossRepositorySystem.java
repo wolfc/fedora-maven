@@ -348,6 +348,7 @@ public class FossRepositorySystem
             }
         }
         // try FOSS local repo with LATEST
+        if (!artifact.getVersion().equals(LATEST_VERSION))
         {
             try {
                 final Artifact alternateArtifact =
@@ -669,7 +670,7 @@ public class FossRepositorySystem
             RepositorySystemSession session,
             Collection<? extends MetadataRequest> requests) {
 
-        // TODO: JPP does not support metadata, but the Fedora repo might
+        // TODO: JPP does not support metadata, but the FOSS repo might
         logger.warn("resolveMetadata " + requests);
         //return delegate.resolveMetadata(session, requests);
         throw new RuntimeException(
