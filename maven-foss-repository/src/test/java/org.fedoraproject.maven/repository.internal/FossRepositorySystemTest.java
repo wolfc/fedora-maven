@@ -31,19 +31,18 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.impl.ArtifactResolver;
 import org.sonatype.aether.impl.internal.DefaultRepositorySystem;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.*;
-import org.sonatype.aether.test.util.impl.StubVersion;
-import org.sonatype.aether.transfer.ArtifactNotFoundException;
+import org.sonatype.aether.transfer.MetadataNotFoundException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.version.Version;
 
 import java.io.IOException;
 
 import static org.apache.maven.artifact.Artifact.LATEST_VERSION;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -65,7 +64,10 @@ public class FossRepositorySystemTest {
     private Artifact artifact;
 
     @Before
-    public void setup() throws IOException, ArtifactResolutionException {
+    public void setup()
+            throws IOException, ArtifactResolutionException,
+            VersionRangeResolutionException, ArtifactDescriptorException {
+
         MockitoAnnotations.initMocks(this);
 
         // allow the session to pass validation
@@ -80,7 +82,19 @@ public class FossRepositorySystemTest {
         fossRepository = repositorySystem.getRemoteRepository();
         artifact = new DefaultArtifact("gid", "aid", "", "ext", "ver");
 
-        // default behavior
+        // default behavior for stubs
+        VersionRangeResult emptyVersionRange =
+                new VersionRangeResult(new VersionRangeRequest())
+                        .addException(mock(MetadataNotFoundException.class));
+
+        doReturn(emptyVersionRange)
+                .when(defaultRepositorySystem).resolveVersionRange(
+                any(RepositorySystemSession.class), any(VersionRangeRequest.class));
+
+        doThrow(ArtifactDescriptorException.class)
+                .when(defaultRepositorySystem).readArtifactDescriptor(
+                any(RepositorySystemSession.class), any(ArtifactDescriptorRequest.class));
+
         doThrow(ArtifactResolutionException.class)
                 .when(artifactResolver).resolveArtifact(
                 any(RepositorySystemSession.class), any(ArtifactRequest.class));
@@ -93,14 +107,10 @@ public class FossRepositorySystemTest {
         VersionRangeRequest request =
                 new VersionRangeRequest(artifact, null, null);
 
-        Version version = new StubVersion(null);
-        VersionRangeResult successfulResult = new VersionRangeResult(request)
-                .addVersion(version)
-                .setRepository(version, fossRepository);
-
-        when(defaultRepositorySystem.resolveVersionRange(
-                eq(session), isValidVersionRangeRequest(artifact.getVersion())))
-                .thenReturn(successfulResult);
+        VersionRangeResult successfulResult = new VersionRangeResult(request);
+        doReturn(successfulResult).when(defaultRepositorySystem)
+                .resolveVersionRange(
+                        eq(session), isValidVersionRangeRequest(artifact));
 
         VersionRangeResult actualResult =
                 repositorySystem.resolveVersionRange(session, request);
@@ -109,17 +119,58 @@ public class FossRepositorySystemTest {
     }
 
     @Test
+    public void testResolveVersionRangeUnsuccessful()
+            throws VersionRangeResolutionException {
+
+        VersionRangeRequest request =
+                new VersionRangeRequest(artifact, null, null);
+
+        // relying on default repository system to return empty range
+        VersionRangeResult result =
+                repositorySystem.resolveVersionRange(session, request);
+
+        assertTrue(result.getVersions().isEmpty());
+    }
+
+    @Test
+    public void testReadArtifactDescriptorSuccessful()
+            throws ArtifactDescriptorException {
+
+        ArtifactDescriptorRequest request =
+                new ArtifactDescriptorRequest(artifact, null, null);
+
+        ArtifactDescriptorResult successfulResult =
+                new ArtifactDescriptorResult(request);
+        doReturn(successfulResult).when(defaultRepositorySystem)
+                .readArtifactDescriptor(
+                        eq(session), isValidArtifactDescriptorRequest());
+
+        ArtifactDescriptorResult actualResult =
+                repositorySystem.readArtifactDescriptor(session, request);
+
+        assertEquals(successfulResult, actualResult);
+    }
+
+    @Test (expected = ArtifactDescriptorException.class)
+    public void testReadArtifactDescriptorUnsuccessful()
+            throws ArtifactDescriptorException {
+
+        ArtifactDescriptorRequest request =
+                new ArtifactDescriptorRequest(artifact, null, null);
+
+        // relying on default repository system to throw exception
+        repositorySystem.readArtifactDescriptor(session, request);
+    }
+
+    @Test
     public void testResolveArtifactSuccessful()
             throws ArtifactResolutionException {
 
         ArtifactRequest request = new ArtifactRequest(artifact, null, null);
 
-        ArtifactResult successfulResult = new ArtifactResult(request)
-                .setArtifact(artifact)
-                .setRepository(fossRepository);
-
+        ArtifactResult successfulResult = new ArtifactResult(request);
         doReturn(successfulResult).when(artifactResolver).resolveArtifact(
-                eq(session), isValidArtifactRequest(artifact.getVersion()));
+                eq(session), isValidArtifactRequest(artifact));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -133,16 +184,10 @@ public class FossRepositorySystemTest {
 
         ArtifactRequest request = new ArtifactRequest(artifact, null, null);
 
-        Artifact latestArtifact = new DefaultArtifact(artifact.getGroupId(),
-                artifact.getArtifactId(), artifact.getClassifier(),
-                LATEST_VERSION);
-
-        ArtifactResult successfulResult = new ArtifactResult(request)
-                .setArtifact(latestArtifact)
-                .setRepository(fossRepository);
-
+        ArtifactResult successfulResult = new ArtifactResult(request);
+        Artifact latestArtifact = artifact.setVersion(LATEST_VERSION);
         doReturn(successfulResult).when(artifactResolver).resolveArtifact(
-                eq(session), isValidArtifactRequest(LATEST_VERSION));
+                eq(session), isValidArtifactRequest(latestArtifact));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -156,12 +201,9 @@ public class FossRepositorySystemTest {
 
         ArtifactRequest request = new ArtifactRequest(artifact, null, "");
 
-        ArtifactResult successfulResult = new ArtifactResult(request)
-                .setArtifact(artifact)
-                .setRepository(fossRepository);
-
+        ArtifactResult successfulResult = new ArtifactResult(request);
         doReturn(successfulResult).when(artifactResolver).resolveArtifact(
-                isJppSession(), isValidArtifactRequest(artifact.getVersion()));
+                isJppSession(), isValidArtifactRequest(artifact));
 
         ArtifactResult actualResult =
                 repositorySystem.resolveArtifact(session, request);
@@ -169,7 +211,6 @@ public class FossRepositorySystemTest {
         assertEquals(successfulResult, actualResult);
     }
 
-    @SuppressWarnings("unchecked")
     @Test (expected = ArtifactResolutionException.class)
     public void testResolveArtifactUnsuccessful()
             throws ArtifactResolutionException {
@@ -181,15 +222,15 @@ public class FossRepositorySystemTest {
     }
 
     // custom argument matchers
-    // violating DRY a little bit here but I don't think we have much of a
-    // choice given that requests share no common interface
+    // violating DRY here but I don't think we have much of a choice given that
+    // requests share no common interface
     class IsValidVersionRangeRequest
             extends ArgumentMatcher<VersionRangeRequest> {
 
-        private String version;
+        private Artifact artifact;
 
-        public IsValidVersionRangeRequest(String version) {
-            this.version = version;
+        public IsValidVersionRangeRequest(Artifact artifact) {
+            this.artifact = artifact;
         }
 
         public boolean matches(Object rangeRequest) {
@@ -197,21 +238,37 @@ public class FossRepositorySystemTest {
 
             return request.getRepositories().size() == 1
                     && request.getRepositories().get(0) == fossRepository
-                    && request.getArtifact().getVersion().equals(version);
+                    && request.getArtifact().equals(artifact);
         }
     }
 
-    public VersionRangeRequest isValidVersionRangeRequest(String version) {
-        return argThat(new IsValidVersionRangeRequest(version));
+    public VersionRangeRequest isValidVersionRangeRequest(Artifact artifact) {
+        return argThat(new IsValidVersionRangeRequest(artifact));
+    }
+
+    class IsValidArtifactDescriptorRequest
+            extends ArgumentMatcher<ArtifactDescriptorRequest> {
+
+        public boolean matches(Object descriptorRequest) {
+            ArtifactDescriptorRequest request =
+                    ((ArtifactDescriptorRequest) descriptorRequest);
+
+            return request.getRepositories().size() == 1
+                    && request.getRepositories().get(0) == fossRepository;
+        }
+    }
+
+    public ArtifactDescriptorRequest isValidArtifactDescriptorRequest() {
+        return argThat(new IsValidArtifactDescriptorRequest());
     }
 
     class IsValidArtifactRequest
             extends ArgumentMatcher<ArtifactRequest> {
 
-        private String version;
+        private Artifact artifact;
 
-        public IsValidArtifactRequest(String version) {
-            this.version = version;
+        public IsValidArtifactRequest(Artifact artifact) {
+            this.artifact = artifact;
         }
 
         public boolean matches(Object artifactRequest) {
@@ -219,12 +276,12 @@ public class FossRepositorySystemTest {
 
             return request.getRepositories().size() == 1
                     && request.getRepositories().get(0) == fossRepository
-                    && request.getArtifact().getVersion().equals(version);
+                    && request.getArtifact().equals(artifact);
         }
     }
 
-    public ArtifactRequest isValidArtifactRequest(String version) {
-        return argThat(new IsValidArtifactRequest(version));
+    public ArtifactRequest isValidArtifactRequest(Artifact artifact) {
+        return argThat(new IsValidArtifactRequest(artifact));
     }
 
     class IsJppSession extends ArgumentMatcher<RepositorySystemSession> {

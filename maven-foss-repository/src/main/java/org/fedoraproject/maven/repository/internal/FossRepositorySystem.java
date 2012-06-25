@@ -252,7 +252,7 @@ public class FossRepositorySystem
         debugf("resolveVersionRange %s", request);
 //        assertFedoraRepository(request.getRepositories());
         try {
-            // try Fedora local repo
+            // try FOSS local repo
             final VersionRangeRequest alternateRequest =
                     new VersionRangeRequest(request.getArtifact(),
                             singletonList(fossRepository),
@@ -274,7 +274,7 @@ public class FossRepositorySystem
                 }
             }
 
-            // the Fedora local repo might be running without metadata
+            // the FOSS local repo might be running without metadata
             // TODO: how to check that?
             if (hasArtifact(session, request, highestVersion)) {
                 result.setRepository(highestVersion, fossRepository);
@@ -345,7 +345,7 @@ public class FossRepositorySystem
         */
         ArtifactDescriptorException originalException = null;
         final Artifact artifact = request.getArtifact();
-        // try Fedora local repo
+        // try FOSS local repo
         {
             try {
                 final ArtifactDescriptorRequest alternateRequest =
@@ -363,7 +363,7 @@ public class FossRepositorySystem
                 originalException = e;
             }
         }
-        // try Fedora local repo with LATEST
+        // try FOSS local repo with LATEST
         {
             try {
                 final Artifact alternateArtifact =
@@ -478,7 +478,7 @@ public class FossRepositorySystem
             }
         }
 
-        // try Fedora local repo
+        // try FOSS local repo
         {
             try {
                 final CollectRequest alternateRequest = new CollectRequest()
@@ -567,7 +567,7 @@ public class FossRepositorySystem
         ArtifactResolutionException originalException = null;
         final Artifact artifact = request.getArtifact();
 
-        // try Fedora local repo
+        // try FOSS local repo
         {
             try {
                 final ArtifactRequest alternateRequest =
@@ -589,7 +589,7 @@ public class FossRepositorySystem
             }
         }
 
-        // try Fedora local repo with LATEST
+        // try FOSS local repo with LATEST
         if (!artifact.getVersion().equals(LATEST_VERSION))
 //            throw new IllegalStateException("NYI: LATEST should not appear " +
 //                    "during resolveArtifact, should it?");
