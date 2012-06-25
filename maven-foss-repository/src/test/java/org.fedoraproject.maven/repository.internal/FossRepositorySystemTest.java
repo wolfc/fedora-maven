@@ -70,7 +70,7 @@ public class FossRepositorySystemTest {
 
         MockitoAnnotations.initMocks(this);
 
-        // allow the session to pass validation
+        // allows the session to pass validation
         // should we be stubbing the validator instead?
         session = mock(RepositorySystemSession.class, Mockito.RETURNS_MOCKS);
 
@@ -143,7 +143,46 @@ public class FossRepositorySystemTest {
                 new ArtifactDescriptorResult(request);
         doReturn(successfulResult).when(defaultRepositorySystem)
                 .readArtifactDescriptor(
-                        eq(session), isValidArtifactDescriptorRequest());
+                        eq(session), isValidArtifactDescriptorRequest(artifact));
+
+        ArtifactDescriptorResult actualResult =
+                repositorySystem.readArtifactDescriptor(session, request);
+
+        assertEquals(successfulResult, actualResult);
+    }
+
+    @Test
+    public void testReadLatestArtifactDescriptorSuccessfully()
+            throws ArtifactDescriptorException {
+
+        ArtifactDescriptorRequest request =
+                new ArtifactDescriptorRequest(artifact, null, null);
+
+        Artifact latestArtifact = artifact.setVersion(LATEST_VERSION);
+        ArtifactDescriptorResult successfulResult =
+                new ArtifactDescriptorResult(request);
+        doReturn(successfulResult).when(defaultRepositorySystem)
+                .readArtifactDescriptor(
+                        eq(session), isValidArtifactDescriptorRequest(latestArtifact));
+
+        ArtifactDescriptorResult actualResult =
+                repositorySystem.readArtifactDescriptor(session, request);
+
+        assertEquals(successfulResult, actualResult);
+    }
+
+    @Test
+    public void testReadJppArtifactDescriptorSuccessfully()
+            throws ArtifactDescriptorException {
+
+        ArtifactDescriptorRequest request =
+                new ArtifactDescriptorRequest(artifact, null, null);
+
+        ArtifactDescriptorResult successfulResult =
+                new ArtifactDescriptorResult(request);
+        doReturn(successfulResult).when(defaultRepositorySystem)
+                .readArtifactDescriptor(
+                        isJppSession(), isValidArtifactDescriptorRequest(artifact));
 
         ArtifactDescriptorResult actualResult =
                 repositorySystem.readArtifactDescriptor(session, request);
@@ -184,8 +223,8 @@ public class FossRepositorySystemTest {
 
         ArtifactRequest request = new ArtifactRequest(artifact, null, null);
 
-        ArtifactResult successfulResult = new ArtifactResult(request);
         Artifact latestArtifact = artifact.setVersion(LATEST_VERSION);
+        ArtifactResult successfulResult = new ArtifactResult(request);
         doReturn(successfulResult).when(artifactResolver).resolveArtifact(
                 eq(session), isValidArtifactRequest(latestArtifact));
 
@@ -249,17 +288,26 @@ public class FossRepositorySystemTest {
     class IsValidArtifactDescriptorRequest
             extends ArgumentMatcher<ArtifactDescriptorRequest> {
 
+        private Artifact artifact;
+
+        public IsValidArtifactDescriptorRequest(Artifact artifact) {
+            this.artifact = artifact;
+        }
+
         public boolean matches(Object descriptorRequest) {
             ArtifactDescriptorRequest request =
                     ((ArtifactDescriptorRequest) descriptorRequest);
 
             return request.getRepositories().size() == 1
-                    && request.getRepositories().get(0) == fossRepository;
+                    && request.getRepositories().get(0) == fossRepository
+                    && request.getArtifact().equals(artifact);
         }
     }
 
-    public ArtifactDescriptorRequest isValidArtifactDescriptorRequest() {
-        return argThat(new IsValidArtifactDescriptorRequest());
+    public ArtifactDescriptorRequest isValidArtifactDescriptorRequest(
+            Artifact artifact) {
+
+        return argThat(new IsValidArtifactDescriptorRequest(artifact));
     }
 
     class IsValidArtifactRequest
